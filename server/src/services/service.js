@@ -105,7 +105,6 @@ const search = async (id, status, parent) => {
 
 const service = ({ strapi }) => ({
   async getunirelations(contentType, documentId, status = 'draft') {
-    console.log('running service');
     const ct = strapi.contentType(contentType);
 
     // find the db id by documentId
@@ -160,14 +159,16 @@ const service = ({ strapi }) => ({
         // create an output for the UI
         .map((entry) => ({
           uid,
-          contentTypeDisplayName: info.displayName,
           title: entry.title || entry.name,
           documentId: entry.documentId,
           isPublished: status === 'published' || publishedDocumentIds.includes(entry.documentId),
         }));
       // add all entries for all models together
-      return prev.concat(entries);
-    }, []);
+      return {
+        ...prev,
+        [info.displayName]: entries,
+      };
+    }, {});
 
     return result;
   },

@@ -20,7 +20,7 @@ Currently, I have been focussing on getting the data from the db. The UI isn't p
 
 ## TODO
 
-- Create a pretty UI
+- Improve the UI
 - Maybe I should not auto-load the list, but have a button that requests it. (there's a lot of db queries happening to get this data)
 
 ## Related issues

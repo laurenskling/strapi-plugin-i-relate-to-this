@@ -1,12 +1,9 @@
-import List from './components/list';
+import Panel from './components/panel';
 
 export default {
   bootstrap(app) {
     // execute some bootstrap code
-    app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
-      name: 'it-relates-to-me-list',
-      Component: List,
-    });
+    app.getPlugin('content-manager').apis.addEditViewSidePanel([Panel]);
   },
   register() {}
 };

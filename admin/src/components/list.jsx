@@ -1,20 +1,30 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Link } from '@strapi/design-system';
+import { Button, Tooltip } from '@strapi/design-system';
 import {
   getFetchClient,
   useNotification,
 } from '@strapi/strapi/admin';
+import { Link } from 'react-router-dom';
 
 const useThisCode = true;
+
+const ConditionalTooltip = ({ isShown, label, children }) => {
+  if (isShown) {
+    return <Tooltip label={label}>{children}</Tooltip>;
+  }
+
+  return children;
+};
 
 const List = () => {
   const { formatMessage } = useIntl();
   const { id, slug } = useParams();
   const [params] = useSearchParams();
   const { toggleNotification } = useNotification();
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(null);
+  const [loaded, setLoaded] = useState(false);
   const status = params.get('status') || 'draft';
 
   const getter = useCallback(async () => {
@@ -33,6 +43,7 @@ const List = () => {
       });
     }
     setItems(response.data.items);
+    setLoaded(true);
     return null;
   }, [formatMessage, id, toggleNotification, slug, status, setItems]);
 
@@ -48,26 +59,37 @@ const List = () => {
     return null;
   }
 
-  return items.length > 0 && (
+  if (!loaded) {
+    return null;
+  }
+
+  if (!items) {
+    return null;
+  }
+
+  return Object.entries(items).map(([contentTypeTitle, entries]) => (
     <div>
-      Links:
-      {items.map(({
+      <h2 style={{ paddingBottom: '0.5rem' }}>{contentTypeTitle}</h2>
+      {entries.map(({
         documentId,
         title,
         uid,
-        contentTypeDisplayName,
         isPublished,
       }) => (
-        <div key={documentId}>
-          <Link
-            href={`/admin/content-manager/collection-types/${uid}/${documentId}`}
-          >
-            {!isPublished && '⚠'} {contentTypeDisplayName}: {title || documentId}
-          </Link>
+        <div key={documentId} style={{ paddingBottom: '0.5rem' }}>
+          <ConditionalTooltip isShown={!isPublished} label={`Current entry is not linked to the published version of ${title}, please publish ${title} to publish the relation`}>
+            <Button
+              variant={!isPublished ? 'danger' : 'tertiary'}
+              tag={Link}
+              to={{ pathname: `/content-manager/collection-types/${uid}/${documentId}` }}
+            >
+              {!isPublished && '⚠'} {title || documentId}
+            </Button>
+          </ConditionalTooltip>
         </div>
       ))}
     </div>
-  );
+  ));
 };
 
 export default List;
