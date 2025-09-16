@@ -62,6 +62,6 @@
   "author": "Laurens Kling <laurens@goedideemedia.nl>",
   "repository": {
     "type": "git",
-    "url": "git@github.com:laurenskling/strapi-plugin-i-relate-to-this.git"
+    "url": "git+ssh://git@github.com/laurenskling/strapi-plugin-i-relate-to-this.git"
   }
 }
