@@ -63,8 +63,8 @@ const List = () => {
     return null;
   }
 
-  if (!items) {
-    return null;
+  if (!items || Object.keys(items).length === 0) {
+    return 'No relations found';
   }
 
   return Object.entries(items).map(([contentTypeTitle, entries]) => (
