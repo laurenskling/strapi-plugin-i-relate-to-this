@@ -1,7 +1,7 @@
 const controller = ({ strapi }) => ({
   async getunirelations(ctx) {
-    const { id, contentType, status } = ctx.request.params;
-    const response = await strapi.service('plugin::i-relate-to-this.service').getunirelations(contentType, id, status);
+    const { id, documentId, contentType, status } = ctx.request.params;
+    const response = await strapi.service('plugin::i-relate-to-this.service').getunirelations(contentType, id, documentId, status);
     if (!response) {
       ctx.body = { success: false };
       return;

@@ -1,6 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { useParams, useSearchParams } from 'react-router-dom';
 import { Button, Tooltip } from '@strapi/design-system';
 import {
   getFetchClient,
@@ -18,21 +17,23 @@ const ConditionalTooltip = ({ isShown, label, children }) => {
   return children;
 };
 
-const List = () => {
+const List = ({
+  model,
+  activeTab, // draft / published
+  document,
+}) => {
+  const { documentId, id } = document || {}; // support singleTypes
   const { formatMessage } = useIntl();
-  const { id, slug } = useParams();
-  const [params] = useSearchParams();
   const { toggleNotification } = useNotification();
   const [items, setItems] = useState(null);
   const [loaded, setLoaded] = useState(false);
-  const status = params.get('status') || 'draft';
 
   const getter = useCallback(async () => {
     const { get } = getFetchClient();
     let response;
-    const endpoint = `/i-relate-to-this/list/${slug}/${id}/${status}`;
+    const endpoint = `/i-relate-to-this/${model}/${id}/${documentId}/${activeTab}`;
     try {
-      response = await get(endpoint, { id });
+      response = await get(endpoint);
     } catch (error) {
       return toggleNotification({
         type: 'warning',
@@ -45,15 +46,24 @@ const List = () => {
     setItems(response.data.items);
     setLoaded(true);
     return null;
-  }, [formatMessage, id, toggleNotification, slug, status, setItems]);
+  }, [
+    model,
+    id,
+    documentId,
+    activeTab,
+    toggleNotification,
+    formatMessage,
+    setItems,
+  ]);
 
   useEffect(() => {
-    // single types don't have an id
+    // single types don't have an documentId
     // on create there are never relations
-    if (useThisCode && id && id !== 'create') {
+    setItems(null);
+    if (useThisCode && documentId) {
       getter();
     }
-  }, [id, getter]);
+  }, [documentId, getter, setItems]);
 
   if (!useThisCode) {
     return null;
@@ -68,7 +78,7 @@ const List = () => {
   }
 
   return Object.entries(items).map(([contentTypeTitle, entries]) => (
-    <div>
+    <div key={contentTypeTitle}>
       <h2 style={{ paddingBottom: '0.5rem' }}>{contentTypeTitle}</h2>
       {entries.map(({
         documentId,

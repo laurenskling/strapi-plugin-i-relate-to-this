@@ -1,7 +1,7 @@
 export default [
   {
     method: 'GET',
-    path: '/list/:contentType/:id/:status',
+    path: '/:contentType/:id/:documentId/:status',
     handler: 'controller.getunirelations',
-  }
+  },
 ];

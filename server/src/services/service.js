@@ -104,17 +104,11 @@ const search = async (id, status, parent) => {
 };
 
 const service = ({ strapi }) => ({
-  async getunirelations(contentType, documentId, status = 'draft') {
+  async getunirelations(contentType, id, documentId, status = 'draft') {
     const ct = strapi.contentType(contentType);
 
-    // find the db id by documentId
-    const entity = await strapi.documents(contentType).findOne({
-      documentId,
-      fields: ['id'],
-      status,
-    });
     // go fetch all related items to me
-    const relatedEntries = await search(entity.id, status, ct);
+    const relatedEntries = await search(id, status, ct);
 
     let publishedDocumentIds = [];
     if (status === 'draft') {

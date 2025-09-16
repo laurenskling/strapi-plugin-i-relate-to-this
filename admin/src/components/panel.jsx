@@ -1,8 +1,8 @@
 import List from "./list";
 
-const Panel = ({ model, documentId, document }) => ({
+const Panel = (props) => ({
   title: 'Relations to this entry',
-  content: <List />,
+  content: <List {...props} />,
 });
 
 export default Panel;
