@@ -1,7 +1,7 @@
 import List from "./list";
 
 const Panel = (props) => ({
-  title: 'Relations to this entry',
+  title: 'One way Relations to this entry',
   content: <List {...props} />,
 });
 

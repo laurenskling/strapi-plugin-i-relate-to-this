@@ -58,9 +58,14 @@ const search = async (id, status, parent) => {
     const relationIdColumn = type === 'relation' ? strapi.db.metadata.identifiers.getJoinColumnAttributeIdName(
       snakeCase(modelName),
     ) : 'entity_id';
-    const parentIdColumn = type === 'relation' ? strapi.db.metadata.identifiers.getJoinColumnAttributeIdName(
+    let parentIdColumn = type === 'relation' ? strapi.db.metadata.identifiers.getJoinColumnAttributeIdName(
       snakeCase(parent.modelName),
     ) : 'cmp_id';
+    // if both the relation name and the name of contentType it relates to are the same
+    // the db looks like: id, relation_id, inv_relation_id
+    if (parentIdColumn === relationIdColumn) {
+      parentIdColumn = `inv_${parentIdColumn}`;
+    }
     const tableName = type === 'relation'
       ? `${snakeCase(`${collectionName} ${key} lnk`)}`
       : `${collectionName}_cmps`; // not snaked cased!
