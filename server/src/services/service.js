@@ -109,7 +109,7 @@ const search = async (id, status, parent) => {
       ]);
 
     // find this item in the db
-    console.log(`getting ${joinColumnName} for ${inverseJoinColumnName} ${id} from ${tableName}`);
+    // console.log(`getting ${joinColumnName} for ${inverseJoinColumnName} ${id} from ${tableName}`);
     const relationsInTable = await strapi.db.getConnection(tableName).where({
       [inverseJoinColumnName]: id,
       ...(type === 'relation' ? {} : {
