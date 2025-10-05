@@ -55,25 +55,63 @@ const search = async (id, status, parent) => {
       collectionName,
       modelName,
     } = model;
-    const relationIdColumn = type === 'relation' ? strapi.db.metadata.identifiers.getJoinColumnAttributeIdName(
-      snakeCase(modelName),
-    ) : 'entity_id';
-    let parentIdColumn = type === 'relation' ? strapi.db.metadata.identifiers.getJoinColumnAttributeIdName(
-      snakeCase(parent.modelName),
-    ) : 'cmp_id';
+
+    // identifiers helps us create table and column names, examples:
+    // relations:
+    // https://github.com/strapi/strapi/blob/develop/packages/core/database/src/utils/identifiers/index.ts
+    // components:
+    // https://github.com/strapi/strapi/blob/develop/packages/core/core/src/utils/transform-content-types-to-models.ts
+    const {
+      getJoinColumnAttributeIdName,
+      getInverseJoinColumnAttributeIdName,
+      getNameFromTokens,
+      getName,
+    } = strapi.db.metadata.identifiers;
+
+    const joinColumnName = type === 'relation'
+      // relation has a wrapper function around getNameFromTokens
+      ? getJoinColumnAttributeIdName(
+        snakeCase(modelName),
+      )
+      // components do not
+      : getNameFromTokens([
+        { name: 'entity', compressible: false },
+        { name: 'id', compressible: false },
+      ]);
+    let inverseJoinColumnName = type === 'relation'
+      // relation has a wrapper function around getNameFromTokens
+      ? getJoinColumnAttributeIdName(
+        snakeCase(parent.modelName),
+      )
+      // components do not
+      : getNameFromTokens([
+        { name: 'component', shortName: 'cmp', compressible: false },
+        { name: 'id', compressible: false },
+      ]);
+
     // if both the relation name and the name of contentType it relates to are the same
     // the db looks like: id, relation_id, inv_relation_id
-    if (parentIdColumn === relationIdColumn) {
-      parentIdColumn = `inv_${parentIdColumn}`;
+    // same as https://github.com/strapi/strapi/blob/develop/packages/core/database/src/metadata/relations.ts#L447
+    if (joinColumnName === inverseJoinColumnName) {
+      inverseJoinColumnName = getInverseJoinColumnAttributeIdName(
+        snakeCase(parent.modelName)
+      );
     }
+
+    // const collectionTableName = getTableName(collectionName);
     const tableName = type === 'relation'
-      ? `${snakeCase(`${collectionName} ${key} lnk`)}`
-      : `${collectionName}_cmps`; // not snaked cased!
+      // relation has a wrapper function around getNameFromTokens
+      ? getName([snakeCase(collectionName), snakeCase(key)], { suffix: 'links' })
+      // components do not
+      : getNameFromTokens([
+        { name: collectionName, compressible: true }, // not snaked cased!
+        { name: 'components', shortName: 'cmps', compressible: false },
+      ]);
 
     // find this item in the db
-    // console.log(`getting ${relationIdColumn} for ${parentIdColumn} ${id} from ${tableName}`);
+    console.log(`getting ${joinColumnName} for ${inverseJoinColumnName} ${id} from ${tableName}`);
     const relationsInTable = await strapi.db.getConnection(tableName).where({
-      [parentIdColumn]: id,
+      [inverseJoinColumnName]: id,
       ...(type === 'relation' ? {} : {
         component_type: parent.uid,
       }),
@@ -92,12 +130,12 @@ const search = async (id, status, parent) => {
         return mergeWith(prev, {
           [model.uid]: {
             info: model.info,
-            items: [item[relationIdColumn]],
+            items: [item[joinColumnName]],
           },
         }, customizer);
       }
       // still a component, keep searching deeper
-      const next = await search(item[relationIdColumn], status, model);
+      const next = await search(item[joinColumnName], status, model);
       return mergeWith(prev, next, customizer);
     }, {});
 
