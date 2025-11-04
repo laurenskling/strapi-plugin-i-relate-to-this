@@ -37,6 +37,10 @@ const search = async (id, status, parent) => {
         ) {
           return acc;
         }
+        // allow models to opt out of being found
+        if (model.pluginOptions['i-relate-to-this']?.exclude === true) {
+          return acc;
+        }
         return acc.concat({
           key,
           type,

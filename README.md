@@ -14,6 +14,20 @@ Imagine having hunderds of relations to some campaign which ends, you unpublish 
 
 This plugin lists all entities that have uni-relations (deeply nested in DZs/components) to the current entity you are editing. It will warn you (⚠) when the (source) entity is published but the related (target) entity does not contain the relation in their published version.
 
+## Options
+
+You can make a contentType opt out of being found by setting:
+
+```
+  pluginOptions: {
+    'i-relate-to-this': {
+      exclude: true,
+    },
+  },
+```
+
+For example: you have form submissions that have a uni-relation to the form it has been submitted to, and you don't want to list all submissions when you navigate to the form, use this.
+
 ## Help wanted
 
 Currently, I have been focussing on getting the data from the db. The UI isn't pretty. Feel free to make a PR to make it pretty, or to improve the lookup logic. Thanks <3
